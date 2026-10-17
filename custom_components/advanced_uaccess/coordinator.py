@@ -80,6 +80,8 @@ class AccessCoordinator(DataUpdateCoordinator[AccessData]):
         )
         self.client = client
         self.raw_topology: dict[str, Any] = {}
+        # caller id -> device registry id of the intercom device
+        self.caller_device_ids: dict[str, str] = {}
         self._catalog: dict[str, dict[str, str]] = {}
         self._catalog_time: float | None = None
         self._write_lock = asyncio.Lock()

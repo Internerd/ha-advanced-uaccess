@@ -222,6 +222,15 @@ def receiver_groups(receivers: Iterable[Receiver]) -> list[dict[str, list[str]]]
     return [group]
 
 
+def format_phone(area_code: Any, number: Any) -> str:
+    """Join country code and number; drop the trunk 0 after a +country code."""
+    area = str(area_code or "").strip()
+    num = str(number or "").strip()
+    if area.startswith("+") and num.startswith("0"):
+        num = num[1:]
+    return " ".join(p for p in (area, num) if p)
+
+
 def _find_viewers(node: Any, found: dict[str, str]) -> None:
     """Collect intercom viewers from the /devices/topology4 tree."""
     if isinstance(node, Mapping):
@@ -264,10 +273,6 @@ class AccessClient:
     def host(self) -> str:
         """Return the base URL of the console."""
         return self._base
-
-    async def close(self) -> None:
-        """Close the underlying HTTP session."""
-        await self._session.close()
 
     async def login(self) -> None:
         """Log in with a local UniFi OS account."""
@@ -388,10 +393,7 @@ class AccessClient:
         result: dict[str, str] = {}
         for item in await self._data("GET", "/callers/phone_number") or []:
             if uid := item.get("unique_id"):
-                number = " ".join(
-                    str(p) for p in (item.get("area_code"), item.get("phone_number")) if p
-                )
-                result[uid] = number or uid
+                result[uid] = format_phone(item.get("area_code"), item.get("phone_number")) or uid
         return result
 
     async def get_users(self) -> dict[str, str]:

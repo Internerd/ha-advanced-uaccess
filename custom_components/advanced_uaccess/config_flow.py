@@ -82,8 +82,6 @@ class AccessConfigFlow(ConfigFlow, domain=DOMAIN):
         except Exception:
             _LOGGER.exception("Unexpected error during setup")
             return {"base": "unknown"}
-        finally:
-            await client.close()
         if not callers:
             return {"base": "no_intercom"}
         return {}

@@ -9,6 +9,7 @@ from custom_components.advanced_uaccess.api import (
     Receiver,
     _find_viewers,
     extract_week_schedule,
+    format_phone,
     parse_topology,
     receiver_groups,
 )
@@ -121,3 +122,11 @@ def test_find_viewers() -> None:
         found,
     )
     assert found == {"0cea1417bf7d": "Front door"}
+
+
+def test_format_phone() -> None:
+    """The trunk 0 is dropped after an international prefix."""
+    assert format_phone("+49", "0176 123") == "+49 176 123"
+    assert format_phone("+49", "160 456") == "+49 160 456"
+    assert format_phone("", "0176 123") == "0176 123"
+    assert format_phone(None, None) == ""

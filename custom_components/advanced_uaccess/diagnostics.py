@@ -42,7 +42,8 @@ async def async_get_config_entry_diagnostics(
         {
             "entry": {"data": dict(entry.data), "options": dict(entry.options)},
             "callers": {cid: asdict(c) for cid, c in data.callers.items()},
-            "catalog_counts": {k: len(v) for k, v in data.catalog.items()},
+            # Prefixed so "phone_number" is not caught by the redaction.
+            "catalog_counts": {f"type_{k}": len(v) for k, v in data.catalog.items()},
             "raw_topology": coordinator.raw_topology,
         },
         TO_REDACT,

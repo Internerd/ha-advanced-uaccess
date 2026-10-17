@@ -114,9 +114,6 @@ class FakeClient:
     async def login(self) -> None:
         self.calls.append(("login", ()))
 
-    async def close(self) -> None:
-        """Nothing to close."""
-
     async def get_callers(self) -> list[dict[str, Any]]:
         return [
             {

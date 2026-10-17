@@ -67,7 +67,11 @@ async def test_setup_creates_entities(
     devices = dr.async_get(hass)
     assert devices.async_get_device({(DOMAIN, CALLER_ID)}).name == "Main Gate"
     assert devices.async_get_device({(DOMAIN, f"{CALLER_ID}_{ROOM_A}")}).name == "1 Alice"
-    assert devices.async_get_device({(DOMAIN, f"{CALLER_ID}_direct")}) is not None
+    caller_device = devices.async_get_device({(DOMAIN, CALLER_ID)})
+    room_device = devices.async_get_device({(DOMAIN, f"{CALLER_ID}_{ROOM_A}")})
+    direct_device = devices.async_get_device({(DOMAIN, f"{CALLER_ID}_direct")})
+    assert room_device.via_device_id == caller_device.id
+    assert direct_device.via_device_id == caller_device.id
 
     assert await hass.config_entries.async_unload(config_entry.entry_id)
     assert config_entry.state is ConfigEntryState.NOT_LOADED

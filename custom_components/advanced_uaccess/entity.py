@@ -9,6 +9,11 @@ from .api import Caller, Target
 from .const import DIRECT_CALL, DOMAIN
 from .coordinator import AccessCoordinator
 
+# HA 2026.x replaced DeviceInfo["via_device"] (identifier tuple, removed in
+# 2027.8) with via_device_id (device registry id). Older versions only know
+# via_device, so pick the key the running version supports.
+_USE_VIA_DEVICE_ID = "via_device_id" in DeviceInfo.__annotations__
+
 
 def caller_device_info(caller: Caller) -> DeviceInfo:
     """Device for an intercom."""
@@ -21,20 +26,30 @@ def caller_device_info(caller: Caller) -> DeviceInfo:
     )
 
 
-def target_device_info(caller: Caller, target: Target) -> DeviceInfo:
+def _via(caller: Caller, caller_device_id: str | None) -> DeviceInfo:
+    if not _USE_VIA_DEVICE_ID:
+        return DeviceInfo(via_device=(DOMAIN, caller.id))
+    if caller_device_id:
+        return DeviceInfo(via_device_id=caller_device_id)  # type: ignore[typeddict-unknown-key]
+    return DeviceInfo()
+
+
+def target_device_info(
+    caller: Caller, target: Target, caller_device_id: str | None = None
+) -> DeviceInfo:
     """Device for a directory room or for the direct call of an intercom."""
     if target.id == DIRECT_CALL:
         return DeviceInfo(
             identifiers={(DOMAIN, f"{caller.id}_{DIRECT_CALL}")},
             translation_key="direct_call",
             translation_placeholders={"intercom": caller.display_name},
-            via_device=(DOMAIN, caller.id),
+            **_via(caller, caller_device_id),
         )
     return DeviceInfo(
         identifiers={(DOMAIN, f"{caller.id}_{target.id}")},
         name=target.name,
         model=f"Room {target.number}" if target.number else None,
-        via_device=(DOMAIN, caller.id),
+        **_via(caller, caller_device_id),
     )
 
 
@@ -51,7 +66,9 @@ class TargetEntity(CoordinatorEntity[AccessCoordinator]):
         caller = coordinator.data.callers[caller_id]
         target = caller.target(target_id)
         assert target is not None
-        self._attr_device_info = target_device_info(caller, target)
+        self._attr_device_info = target_device_info(
+            caller, target, coordinator.caller_device_ids.get(caller_id)
+        )
 
     @property
     def caller(self) -> Caller | None:

@@ -54,25 +54,30 @@ async def async_setup_entry(hass: HomeAssistant, entry: AccessConfigEntry) -> bo
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
 
-    registry = dr.async_get(hass)
-    for caller in coordinator.data.callers.values():
-        registry.async_get_or_create(config_entry_id=entry.entry_id, **caller_device_info(caller))
-
     @callback
-    def _remove_stale_devices() -> None:
-        """Drop devices of rooms or intercoms that no longer exist."""
+    def _sync_devices() -> None:
+        """Register intercom devices and drop devices that no longer exist.
+
+        Runs before the platform listeners, so room devices can always link to
+        their intercom device.
+        """
+        registry = dr.async_get(hass)
         valid: set[str] = set()
         for caller in coordinator.data.callers.values():
+            device = registry.async_get_or_create(
+                config_entry_id=entry.entry_id, **caller_device_info(caller)
+            )
+            coordinator.caller_device_ids[caller.id] = device.id
             valid.add(caller.id)
             valid.add(f"{caller.id}_{DIRECT_CALL}")
             valid.update(f"{caller.id}_{room_id}" for room_id in caller.rooms)
-        registry = dr.async_get(hass)
         for device in dr.async_entries_for_config_entry(registry, entry.entry_id):
             ids = {i[1] for i in device.identifiers if i[0] == DOMAIN}
             if ids and not ids & valid:
                 registry.async_update_device(device.id, remove_config_entry_id=entry.entry_id)
 
-    entry.async_on_unload(coordinator.async_add_listener(_remove_stale_devices))
+    _sync_devices()
+    entry.async_on_unload(coordinator.async_add_listener(_sync_devices))
     entry.async_on_unload(entry.add_update_listener(_async_reload))
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
@@ -83,10 +88,12 @@ async def _async_reload(hass: HomeAssistant, entry: AccessConfigEntry) -> None:
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: AccessConfigEntry) -> bool:
-    """Unload a config entry."""
-    if unloaded := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        await entry.runtime_data.client.close()
-    return unloaded
+    """Unload a config entry.
+
+    The HTTP session was created during entry setup, so Home Assistant
+    detaches it on unload.
+    """
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
 async def async_remove_config_entry_device(
