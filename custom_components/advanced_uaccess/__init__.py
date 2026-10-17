@@ -14,12 +14,20 @@ from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.typing import ConfigType
 
 from .api import AccessClient
-from .const import CONF_VERIFY_SSL, DEFAULT_VERIFY_SSL, DIRECT_CALL, DOMAIN
+from .calls import PRIME_LOOKBACK, CallTracker
+from .const import (
+    CONF_TRACK_CALLS,
+    CONF_VERIFY_SSL,
+    DEFAULT_TRACK_CALLS,
+    DEFAULT_VERIFY_SSL,
+    DIRECT_CALL,
+    DOMAIN,
+)
 from .coordinator import AccessConfigEntry, AccessCoordinator
 from .entity import caller_device_info
 from .services import async_setup_services
 
-PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.SWITCH]
+PLATFORMS: list[Platform] = [Platform.EVENT, Platform.SENSOR, Platform.SWITCH]
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -77,6 +85,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: AccessConfigEntry) -> bo
                 registry.async_update_device(device.id, remove_config_entry_id=entry.entry_id)
 
     _sync_devices()
+
+    if entry.options.get(CONF_TRACK_CALLS, DEFAULT_TRACK_CALLS):
+        tracker = CallTracker(
+            hass, coordinator.client, coordinator.call_signal, coordinator.target_name
+        )
+        coordinator.calls = tracker
+        await tracker.async_refresh(PRIME_LOOKBACK)
+        entry.async_create_background_task(
+            hass, tracker.async_poll_loop(), f"{DOMAIN} ring history poll"
+        )
+        entry.async_create_background_task(
+            hass, tracker.async_ws_loop(), f"{DOMAIN} notification websocket"
+        )
     entry.async_on_unload(coordinator.async_add_listener(_sync_devices))
     entry.async_on_unload(entry.add_update_listener(_async_reload))
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)

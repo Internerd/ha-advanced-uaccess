@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 import logging
 from typing import Any
 
@@ -31,6 +32,7 @@ ULP_BASE = "/proxy/access/ulp-go/api/v2"
 LOGIN_PATH = "/api/auth/login"
 REQUEST_TIMEOUT = 20
 USERS_PAGE_SIZE = 100
+NOTIFICATION_WS_PATH = "/proxy/access/api/v2/ws/notification"
 
 
 class AccessError(Exception):
@@ -220,6 +222,10 @@ def receiver_groups(receivers: Iterable[Receiver]) -> list[dict[str, list[str]]]
         if receiver.id not in ids:
             ids.append(receiver.id)
     return [group]
+
+
+def _rfc3339(value: datetime) -> str:
+    return value.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def format_phone(area_code: Any, number: Any) -> str:
@@ -440,6 +446,40 @@ class AccessClient:
         found: dict[str, str] = {}
         _find_viewers(await self._data("GET", "/devices/topology4"), found)
         return found
+
+    async def search_system_log(
+        self,
+        topic: str,
+        since: datetime,
+        until: datetime,
+        page_size: int = 50,
+    ) -> list[dict[str, Any]]:
+        """Return system log events of a topic (e.g. "rings") in a time window."""
+        data = await self._data(
+            "POST",
+            "/system_log/search",
+            params={"page_size": page_size, "page_num": 1},
+            # since/until must be RFC 3339 strings; numbers are rejected.
+            json={"topic": topic, "since": _rfc3339(since), "until": _rfc3339(until)},
+        )
+        return list((data or {}).get("events") or [])
+
+    async def ws_connect(self) -> aiohttp.ClientWebSocketResponse:
+        """Open the Access notification WebSocket (cookie authenticated)."""
+        if self._csrf is None:
+            await self.login()
+        url = self._base.replace("https://", "wss://", 1).replace("http://", "ws://", 1)
+        try:
+            return await self._session.ws_connect(
+                f"{url}{NOTIFICATION_WS_PATH}", ssl=self._ssl, heartbeat=30
+            )
+        except aiohttp.WSServerHandshakeError as err:
+            if err.status in (401, 403):
+                self._csrf = None
+                raise AccessAuthError(f"WebSocket rejected (HTTP {err.status})") from err
+            raise AccessConnectionError(f"WebSocket handshake failed: {err}") from err
+        except (aiohttp.ClientError, TimeoutError) as err:
+            raise AccessConnectionError(f"WebSocket: {err}") from err
 
     # ---- write ----------------------------------------------------------
 

@@ -6,10 +6,13 @@ from typing import Any
 
 from homeassistant.components.sensor import SensorEntity, SensorStateClass
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import ATTR_CALLER_ID, ATTR_ROOM_ID
+from .calls import Call
+from .const import ATTR_CALLER_ID, ATTR_ROOM_ID, DIRECT_CALL, DOMAIN
 from .coordinator import AccessConfigEntry, AccessCoordinator
 from .entity import TargetEntity, caller_device_info
 
@@ -32,6 +35,8 @@ async def async_setup_entry(
             if (caller.id, "") not in known:
                 known.add((caller.id, ""))
                 entities.append(RoomCountSensor(coordinator, caller.id))
+                if coordinator.calls is not None:
+                    entities.append(LastCallSensor(coordinator, caller.id))
             for target in (caller.direct, *caller.rooms.values()):
                 if (caller.id, target.id) not in known:
                     known.add((caller.id, target.id))
@@ -123,4 +128,66 @@ class RoomCountSensor(CoordinatorEntity[AccessCoordinator], SensorEntity):
                 {"room_id": room.id, "name": room.name, "number": room.number}
                 for room in caller.rooms.values()
             ],
+        }
+
+
+class LastCallSensor(CoordinatorEntity[AccessCoordinator], SensorEntity):
+    """Room (or doorbell call) that was rung last at an intercom."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "last_call"
+
+    def __init__(self, coordinator: AccessCoordinator, caller_id: str) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self.caller_id = caller_id
+        self._attr_unique_id = f"{caller_id}_last_call"
+        self._attr_device_info = caller_device_info(coordinator.data.callers[caller_id])
+
+    async def async_added_to_hass(self) -> None:
+        """Subscribe to call events."""
+        await super().async_added_to_hass()
+        self.async_on_remove(
+            async_dispatcher_connect(self.hass, self.coordinator.call_signal, self._on_call)
+        )
+
+    @callback
+    def _on_call(self, kind: str, call: Call, data: dict[str, Any]) -> None:
+        if call.caller_id == self.caller_id:
+            self.async_write_ha_state()
+
+    @property
+    def _call(self) -> Call | None:
+        tracker = self.coordinator.calls
+        return tracker.last_call.get(self.caller_id) if tracker else None
+
+    def _target_label(self, call: Call) -> str:
+        if call.target_id != DIRECT_CALL:
+            return call.target_name or call.target_id
+        device = dr.async_get(self.hass).async_get_device(
+            identifiers={(DOMAIN, f"{self.caller_id}_{DIRECT_CALL}")}
+        )
+        return (device.name if device else None) or DIRECT_CALL
+
+    @property
+    def native_value(self) -> str | None:
+        """Return the name of the room that was rung last."""
+        call = self._call
+        return self._target_label(call) if call else None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Details of the last call."""
+        call = self._call
+        if call is None:
+            return {}
+        return {
+            ATTR_CALLER_ID: call.caller_id,
+            ATTR_ROOM_ID: call.target_id,
+            "status": call.status,
+            "started": call.started.isoformat(),
+            "ended": call.ended.isoformat() if call.ended else None,
+            "answered_by": call.answered_by or None,
+            "answered_by_type": call.answered_by_type or None,
+            "call_id": call.call_id,
         }

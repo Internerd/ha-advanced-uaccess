@@ -3,6 +3,17 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] - 2026-10-17
+
+### Added
+
+- Call tracking: which room (or the doorbell direct call) was rung and how the call ended.
+  - Event entity **Call** per room and per doorbell call, with the event types `incoming`, `accepted`, `rejected`, `missed`, `canceled` and `ended`.
+  - Sensor **Last call** per intercom: its state is the room that was rung last. The attributes hold the status, the start and end time, and who answered.
+  - Home Assistant event `advanced_uaccess_call` with the same data, for automations.
+  - Source: the Access ring history (system log, topic `rings`). The Access notification WebSocket triggers an immediate read, and the history is also read every 15 s. A Home Assistant restart does not replay old calls.
+  - New option **Track calls** (on by default).
+
 ## [0.1.2] - 2026-10-17
 
 ### Fixed
@@ -32,6 +43,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Diagnostics with redaction.
 - English and German translations.
 
+[0.2.0]: https://github.com/internerd/ha-advanced-uaccess/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/internerd/ha-advanced-uaccess/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/internerd/ha-advanced-uaccess/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/internerd/ha-advanced-uaccess/releases/tag/v0.1.0

@@ -25,6 +25,10 @@ TO_REDACT = {
     "display_name",
     "full_name",
     "alias",
+    "answered_by",
+    "target_name",
+    "thumbnail_url",
+    "video_url",
 }
 
 
@@ -45,6 +49,17 @@ async def async_get_config_entry_diagnostics(
             # Prefixed so "phone_number" is not caught by the redaction.
             "catalog_counts": {f"type_{k}": len(v) for k, v in data.catalog.items()},
             "raw_topology": coordinator.raw_topology,
+            "calls": (
+                {
+                    "websocket_connected": coordinator.calls.ws_connected,
+                    "last_call": {
+                        cid: call.as_dict() for cid, call in coordinator.calls.last_call.items()
+                    },
+                    "recent_log_entries": coordinator.calls.recent,
+                }
+                if coordinator.calls
+                else None
+            ),
         },
         TO_REDACT,
     )

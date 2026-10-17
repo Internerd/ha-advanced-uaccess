@@ -60,12 +60,14 @@
         "data": {
           "scan_interval": "Abfrageintervall",
           "restore_schedules": "Zeitpläne wiederherstellen",
-          "user_receivers": "Benutzer als Empfänger anbieten"
+          "user_receivers": "Benutzer als Empfänger anbieten",
+          "track_calls": "Anrufe verfolgen"
         },
         "data_description": {
           "scan_interval": "Wie oft das Verzeichnis von der Konsole gelesen wird.",
           "restore_schedules": "Access löscht den privaten Zeitplan eines Empfängers beim Entfernen. Wenn aktiv, wird der Zeitplan gesichert und beim erneuten Hinzufügen wiederhergestellt.",
-          "user_receivers": "Für jeden gewählten Benutzer wird pro Raum ein Schalter angelegt. Standard: Benutzer, die bereits Anrufe erhalten."
+          "user_receivers": "Für jeden gewählten Benutzer wird pro Raum ein Schalter angelegt. Standard: Benutzer, die bereits Anrufe erhalten.",
+          "track_calls": "Liest die Klingel-Historie und den Benachrichtigungs-WebSocket, um anzuzeigen, welcher Raum angerufen wurde und wie der Anruf endete."
         }
       }
     }
@@ -102,6 +104,38 @@
       },
       "rooms": {
         "name": "Räume"
+      },
+      "last_call": {
+        "name": "Letzter Anruf",
+        "state_attributes": {
+          "status": {
+            "state": {
+              "incoming": "Eingehend",
+              "accepted": "Angenommen",
+              "rejected": "Abgelehnt",
+              "missed": "Verpasst",
+              "canceled": "Abgebrochen",
+              "ended": "Beendet"
+            }
+          }
+        }
+      }
+    },
+    "event": {
+      "call": {
+        "name": "Anruf",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "incoming": "Eingehend",
+              "accepted": "Angenommen",
+              "rejected": "Abgelehnt",
+              "missed": "Verpasst",
+              "canceled": "Abgebrochen",
+              "ended": "Beendet"
+            }
+          }
+        }
       }
     }
   },

@@ -27,6 +27,7 @@ from .api import (
     extract_week_schedule,
     parse_topology,
 )
+from .calls import CallTracker
 from .const import (
     CONF_RESTORE_SCHEDULES,
     CONF_SCAN_INTERVAL,
@@ -89,6 +90,15 @@ class AccessCoordinator(DataUpdateCoordinator[AccessData]):
             hass, STORAGE_VERSION, f"{DOMAIN}.{entry.entry_id}"
         )
         self._schedules: dict[str, dict[str, Any]] = {}
+        # Set up in async_setup_entry when call tracking is enabled.
+        self.calls: CallTracker | None = None
+        self.call_signal = f"{DOMAIN}_{entry.entry_id}_call"
+
+    def target_name(self, caller_id: str, target_id: str) -> str:
+        """Return the name of a room ("" for the direct call or unknown rooms)."""
+        caller = self.data.callers.get(caller_id) if self.data else None
+        target = caller.rooms.get(target_id) if caller else None
+        return target.name if target else ""
 
     @property
     def restore_schedules(self) -> bool:

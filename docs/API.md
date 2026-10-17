@@ -181,6 +181,84 @@ PUT /callers/{caller_id}/schedules
 DELETE /callers/{caller_id}/receivers/{receiver_id}/schedules?target_type=viewer_device&room_id={room_id}
 ```
 
+## Ring history and live events
+
+Recorded on 2026-10-17 on the same console.
+
+### Ring history ✅
+
+```
+POST /system_log/search?page_size=50&page_num=1
+{"topic": "rings", "since": "2026-09-17T00:00:00Z", "until": "2026-10-17T23:59:59Z"}
+→ data: {versions, events[], buckets[]}
+```
+
+- `since` and `until` must be RFC 3339 strings. A number is rejected with `CODE_PARAMS_INVALID`.
+- Other topics: `access_denial`, `unlocks`, `devices`, `emergency`, `system`, `admin`.
+
+An event has these fields:
+
+- `id`, `log_key`, `event_type`, `message`, `published` (epoch ms), `result`
+- `metadata.directory`: `id` is the directory `room_id`, `display_name` the room name. It is missing for the doorbell direct call.
+- `metadata.actor`: the user or viewer that accepted or rejected the call.
+- `metadata.viewer`: the viewer, if one was involved.
+- `metadata.device_ua_pro.id`: the caller id (intercom).
+- `metadata.reader_capture`:
+  - `id` is shared by "Incoming Call" and the result entry of the same call.
+  - `thumbnail_url` and `video_url` point to Protect.
+  - The "accepted" entry has no `reader_capture`.
+
+Recorded log keys:
+
+| log_key | event_type | Meaning |
+|---|---|---|
+| `access.visitor.made.doorbell.to.viewer` | `access.remotecall.request` | incoming call to a room |
+| `access.doorbell.visitor.rang.remotecall` | `access.remotecall.request` | incoming doorbell direct call |
+| `access.user.accept.doorbell.door_to_viewer` | `access.remotecall.accepted` | accepted by a user |
+| `access.user.reject.doorbell.from_door_to_viewer` | `access.door.unlock` | rejected, or an accepted call was hung up |
+| `access.doorbell.reject.use.viewer` | `access.door.unlock` | direct call rejected at a viewer |
+| `access.doorbell.missed.from_door_to_viewer` | `access.door.unlock` | room call not answered |
+| `access.doorbell.from_door.missed` | `access.door.unlock` | direct call not answered |
+| `access.doorbell.no_receivers.missed` | `access.door.unlock` | direct call without an active receiver, about 60 s after the ring |
+| `access.doorbell.canceled.from_door_to_viewer` | `access.door.unlock` | visitor canceled |
+
+Further keys from the UI source, not recorded yet 🧩:
+
+- `access.user.accept.doorbell.from_door`
+- `access.viewer.accept.doorbell`
+- `access.doorbell.phone.accept`
+- `access.doorbell.third_party_sip.accept`
+- `access.doorbell.reject.use.third_party_sip`
+- `access.doorbell.visitor.canceled`
+- `access.doorbell.visitor.rang`
+- `access.user.reject.doorbell.from_door`
+
+Incremental cache endpoints exist, but their entry format has not been checked, so the integration does not use them:
+
+- `GET /system_log/cache?topic=rings`
+- `GET /system_log/cache_latest_data?topic=rings&max_id=<id>`
+
+### Notification WebSocket ✅
+
+`wss://<console>/proxy/access/api/v2/ws/notification`
+
+- Authentication: the session cookie.
+- Messages are plain JSON: `{"event", "receiver_id", "event_object_id", "save_to_history", "data"}`. The connection also sends `"Hello"` keep-alives.
+- `access.remote_view` is an incoming call to app receivers. It contains `request_id` and `door_guard_ids` (the users who are called).
+  - Its `room_id` is a WebRTC session id (`WR-…`), **not** the directory room.
+  - Access sends no `access.remote_view` for a doorbell call that only rings viewers.
+- `access.remote_view.change` is the end of a call: `{"reason_code", "remote_call_request_id"}`.
+
+| reason_code | Meaning |
+|---|---|
+| `400` | accepted ✅ |
+| `106` | rejected ✅ |
+| `105`, `108` | probably canceled or timeout 🧩 |
+
+### Protect ring event
+
+`wss://<console>/proxy/protect/ws/updates` sends an event of `type: "ring"` for every ring. It is binary and contains no room. The integration does not use it.
+
 ## How the integration uses the API
 
 | Action | Requests |
@@ -190,5 +268,6 @@ DELETE /callers/{caller_id}/receivers/{receiver_id}/schedules?target_type=viewer
 | remove | `GET /topology`, then the schedule is saved with `GET /schedule/{id}` if it is private, then `DELETE /callers/receivers/{id}`. If that fails, the full list is replaced instead. |
 | create / delete room | `POST /rooms/receivers` / `DELETE /rooms/{room}` |
 | schedule | `PUT /schedules` / `DELETE /receivers/{id}/schedules` |
+| calls | WebSocket event → `POST /system_log/search` (topic `rings`, last 5 min), and the same request every 15 s |
 
 All write operations of one config entry are serialized with a lock.

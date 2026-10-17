@@ -10,12 +10,14 @@ CONF_VERIFY_SSL: Final = "verify_ssl"
 CONF_SCAN_INTERVAL: Final = "scan_interval"
 CONF_RESTORE_SCHEDULES: Final = "restore_schedules"
 CONF_USER_RECEIVERS: Final = "user_receivers"
+CONF_TRACK_CALLS: Final = "track_calls"
 
 DEFAULT_VERIFY_SSL: Final = False
 DEFAULT_SCAN_INTERVAL: Final = 30
 MIN_SCAN_INTERVAL: Final = 10
 MAX_SCAN_INTERVAL: Final = 3600
 DEFAULT_RESTORE_SCHEDULES: Final = True
+DEFAULT_TRACK_CALLS: Final = True
 
 STORAGE_VERSION: Final = 1
 

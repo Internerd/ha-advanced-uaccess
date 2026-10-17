@@ -60,12 +60,14 @@
         "data": {
           "scan_interval": "Polling interval",
           "restore_schedules": "Restore schedules",
-          "user_receivers": "Users offered as receivers"
+          "user_receivers": "Users offered as receivers",
+          "track_calls": "Track calls"
         },
         "data_description": {
           "scan_interval": "How often the directory is read from the console.",
           "restore_schedules": "Access deletes the private schedule of a receiver when it is removed. When enabled, the schedule is saved and restored when the receiver is added again.",
-          "user_receivers": "One switch per room is created for each selected user. Default: users that already receive calls."
+          "user_receivers": "One switch per room is created for each selected user. Default: users that already receive calls.",
+          "track_calls": "Read the ring history and the notification WebSocket to show which room was called and how the call ended."
         }
       }
     }
@@ -102,6 +104,38 @@
       },
       "rooms": {
         "name": "Rooms"
+      },
+      "last_call": {
+        "name": "Last call",
+        "state_attributes": {
+          "status": {
+            "state": {
+              "incoming": "Incoming",
+              "accepted": "Accepted",
+              "rejected": "Rejected",
+              "missed": "Missed",
+              "canceled": "Canceled",
+              "ended": "Ended"
+            }
+          }
+        }
+      }
+    },
+    "event": {
+      "call": {
+        "name": "Call",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "incoming": "Incoming",
+              "accepted": "Accepted",
+              "rejected": "Rejected",
+              "missed": "Missed",
+              "canceled": "Canceled",
+              "ended": "Ended"
+            }
+          }
+        }
       }
     }
   },

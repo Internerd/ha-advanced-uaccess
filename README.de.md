@@ -30,6 +30,7 @@ Sie braucht keine Cloud und keinen UI.com-Account.
 - 🏠 **Räume**: Räume per Service anlegen und löschen.
 - 🗓️ **Zeitpläne**: Benutzerdefinierter Wochenplan pro Empfänger oder Rücksetzen auf „Immer“.
 - ♻️ **Zeitplan-Wiederherstellung**: Access löscht beim Entfernen eines Empfängers dessen privaten Zeitplan. Die Integration sichert ihn und stellt ihn beim erneuten Hinzufügen wieder her.
+- 📞 **Anruf-Verfolgung**: Zeigt, welcher Raum angerufen wurde, ob der Anruf angenommen, abgelehnt oder verpasst wurde und wer angenommen hat.
 - 🔍 **Automatische Erkennung**: Intercoms, Räume, Viewer, Chimes, Benutzer und Telefonnummern werden erkannt. Neue Räume erscheinen automatisch.
 - 🩺 **Diagnose-Download**: Persönliche Daten sind geschwärzt.
 
@@ -85,6 +86,7 @@ Empfehlung:
 |---|---|---|
 | Abfrageintervall | 30 s | Wie oft das Verzeichnis gelesen wird |
 | Zeitpläne wiederherstellen | an | Privaten Zeitplan beim Entfernen sichern und beim Hinzufügen wiederherstellen |
+| Anrufe verfolgen | an | Zeigt, welcher Raum angerufen wurde und wie der Anruf endete |
 | Benutzer als Empfänger | Benutzer, die bereits Anrufe erhalten | Für jeden gewählten Benutzer gibt es pro Raum einen Schalter |
 
 ## Entitäten
@@ -99,6 +101,13 @@ Das Gerät Türklingelruf und jedes Raum-Gerät haben:
 
 - **einen Schalter pro Empfänger**: alle Viewer, Chimes und Telefonnummern sowie die ausgewählten Benutzer.
 - einen Sensor **Empfänger** mit der Anzahl. Seine Attribute listen die Empfänger mit ihren Zeitplänen.
+
+Mit aktiver Anruf-Verfolgung (Standard) gibt es außerdem:
+
+- pro Raum und für den Türklingelruf eine **Event-Entität „Anruf“**. Ihre Ereignistypen sind `incoming`, `accepted`, `rejected`, `missed`, `canceled` und `ended`. `ended` heißt: Ein angenommener Anruf wurde aufgelegt. In den Attributen stehen unter anderem Raum, Status, wer angenommen hat und die Zeit.
+- pro Intercom einen **Sensor „Letzter Anruf“**. Sein Zustand ist der Raum, bei dem zuletzt geklingelt wurde. In den Attributen stehen Status, Beginn, Ende und wer angenommen hat.
+
+Jede Änderung eines Anrufs löst zusätzlich das HA-Ereignis `advanced_uaccess_call` aus, z. B. für Automationen.
 
 Attribute der Schalter: `caller_id`, `room_id` (`direct` = Türklingelruf), `receiver_type`, `receiver_id`, `schedule`, `schedule_is_private`.
 
@@ -149,6 +158,9 @@ Weitere Beispiele stehen in der [englischen README](README.md#examples). Die API
 - **Zeitplan-Wiederherstellung**: Das Antwortformat von `GET /schedule/{id}` wurde noch nicht mitgeschnitten. Die Integration sucht in der Antwort nach `week_schedule`. Findet sie es nicht, schreibt sie eine Warnung ins Log und stellt den Zeitplan nicht wieder her.
 - Zeitpläne für den Türklingelruf werden ohne `room_id` gesendet. Das ist noch nicht getestet.
 - Raumname und Raumnummer lassen sich noch nicht ändern.
+- **Anruf-Verfolgung**:
+  - Für die Annahme per Telefon, Fremd-SIP oder Viewer wurden die Log-Keys noch nicht mitgeschnitten. Sie stammen aus dem Quellcode des Access-UI.
+  - Der Log-Eintrag „angenommen“ hat keine Anruf-ID. Er wird dem neuesten offenen Anruf desselben Raums aus den letzten 3 Minuten zugeordnet.
 
 ## Datenschutz
 

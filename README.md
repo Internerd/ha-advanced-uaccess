@@ -36,6 +36,7 @@ over HTTPS. No cloud, no UI.com account.
 | 🏠 **Rooms** | Create and delete directory rooms with services. |
 | 🗓️ **Schedules** | Set a custom weekly schedule per receiver, or reset it to “Always”. |
 | ♻️ **Schedule restore** | Access deletes a receiver's private schedule when it is removed. The integration saves it and restores it when the receiver is added again. |
+| 📞 **Call tracking** | See which room was rung, whether the call was answered, rejected or missed, and who answered. |
 | 🔍 **Auto discovery** | All intercoms, rooms, viewers, chimes, users and phone numbers are discovered; new rooms appear automatically. |
 | 🌍 **Translations** | English and German. |
 | 🩺 **Diagnostics** | Download redacted diagnostics including the raw directory graph. |
@@ -110,6 +111,7 @@ Re-authentication and *Reconfigure* are supported.
 |---|---|---|
 | Polling interval | 30 s | How often the directory is read |
 | Restore schedules | on | Save a private schedule on removal and restore it on re-add |
+| Track calls | on | Show which room was rung and how the call ended |
 | Users offered as receivers | users that already receive calls | One switch per room is created for each selected user |
 
 ## Entities
@@ -124,6 +126,11 @@ The doorbell call device and every room device have:
 
 - a **switch per receiver**: every viewer, chime and phone number, plus the selected users.
 - a sensor **Receivers**: the number of receivers. Its attributes list them with their schedules.
+
+With call tracking enabled (default) there are also:
+
+- per room and for the doorbell call: an **event entity "Call"**. Its event types are `incoming`, `accepted`, `rejected`, `missed`, `canceled` and `ended`. `ended` means an accepted call was hung up. Attributes: `room_id`, `room_name`, `call_id`, `status`, `answered_by`, `answered_by_type`, `started`, `time`, `thumbnail_url`.
+- per intercom: a **sensor "Last call"**. Its state is the room that was rung last. Attributes: `status`, `started`, `ended`, `answered_by`, `call_id`.
 
 Switch attributes: `caller_id`, `room_id` (`direct` for the doorbell call), `receiver_type`,
 `receiver_id`, `schedule` (`always` or the schedule name) and `schedule_is_private`.
@@ -197,6 +204,33 @@ data:
 response_variable: room
 ```
 
+### Call tracking
+
+Every call change also fires the Home Assistant event `advanced_uaccess_call` with the same data as the event entities:
+
+```yaml
+automation:
+  - alias: "Notify when room 2 is rung"
+    triggers:
+      - trigger: event
+        event_type: advanced_uaccess_call
+        event_data:
+          room_id: ec4877a7-10d7-4c38-8831-d823a829b870
+          type: incoming
+    actions:
+      - action: notify.mobile_app_phone
+        data:
+          message: "Someone is ringing {{ trigger.event.data.room_name }}"
+```
+
+`thumbnail_url` is a path on the console that serves the snapshot of the call (UniFi Protect). It needs a login to the console.
+
+How the integration gets the data:
+
+- **Source:** the Access ring history (`POST /system_log/search`, topic `rings`). It is the only source that names the directory room.
+- **Trigger:** the Access notification WebSocket (`access.remote_view` / `access.remote_view.change`) triggers an immediate read.
+- **Poll:** the history is also read every 15 s. That covers doorbell calls that only ring viewers, which produce no WebSocket event, and the "missed" entry, which Access writes about 60 s after the ring.
+
 ## How it works
 
 | Action | Request |
@@ -207,6 +241,7 @@ response_variable: room
 | Remove receiver | `DELETE /callers/receivers/{id}?caller_id&room_id&receiver_id&receiver_type`, with the list replace as fallback |
 | Schedules | `PUT /callers/{caller}/schedules`, `DELETE /callers/{caller}/receivers/{id}/schedules` |
 | Rooms | `POST /callers/{caller}/rooms/receivers`, `DELETE /callers/{caller}/rooms/{room}` |
+| Calls | `POST /system_log/search` (topic `rings`), WebSocket `/proxy/access/api/v2/ws/notification` |
 
 The full API notes are in [docs/API.md](docs/API.md).
 
@@ -218,6 +253,9 @@ The full API notes are in [docs/API.md](docs/API.md).
 - **Schedule restore**: the response format of `GET /schedule/{id}` has not been recorded yet. The integration searches the response for `week_schedule`. If it cannot find it, a warning is logged and the schedule is not restored.
 - Schedules of the doorbell call are sent without `room_id`. This has not been tested yet.
 - Room names and numbers cannot be changed yet.
+- **Call tracking**:
+  - Accepting a call by phone, by third-party SIP or at a viewer uses log keys that have not been recorded yet. They are mapped from the Access UI source code.
+  - The "accepted" log entry carries no call id. It is matched to the newest open call of the same room from the last 3 minutes.
 
 Please report changes of the Access API with a [diagnostics download](#troubleshooting).
 

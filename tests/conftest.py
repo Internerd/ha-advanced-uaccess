@@ -14,6 +14,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.advanced_uaccess.api import (
     AccessApiError,
+    AccessConnectionError,
     Receiver,
     Target,
     parse_topology,
@@ -64,6 +65,7 @@ class FakeClient:
             }
         }
         self._room_counter = 0
+        self.ring_events: list[dict[str, Any]] = []
 
     # helpers
     def _target(self, target_id: str) -> Target:
@@ -197,6 +199,14 @@ class FakeClient:
         self.rooms[room_id] = Target(room_id, name, number, number_check, list(receivers))
         return {"id": room_id, "name": name, "room": number}
 
+    async def search_system_log(self, topic, since, until, page_size=50) -> list[dict[str, Any]]:
+        self.calls.append(("search_system_log", (topic,)))
+        lo, hi = since.timestamp() * 1000, until.timestamp() * 1000
+        return [copy.deepcopy(e) for e in self.ring_events if lo <= e["published"] <= hi]
+
+    async def ws_connect(self):
+        raise AccessConnectionError("no websocket in tests")
+
     async def delete_room(self, caller_id, room_id) -> None:
         self.calls.append(("delete_room", (room_id,)))
         del self.rooms[room_id]
@@ -222,3 +232,40 @@ def config_entry() -> MockConfigEntry:
     return MockConfigEntry(
         domain=DOMAIN, data=dict(ENTRY_DATA), unique_id=ENTRY_DATA["host"], title="Console"
     )
+
+
+def ring_event(
+    event_id: int,
+    log_key: str,
+    event_type: str,
+    published_ms: int,
+    *,
+    room: tuple[str, str] | None = None,
+    actor: str | None = None,
+    capture: str | None = None,
+    viewer: bool = False,
+) -> dict[str, Any]:
+    """Build a system log "rings" event like the ones Access returns."""
+    meta: dict[str, Any] = {
+        "device": [{"id": CALLER_ID, "type": "UA-Intercom", "display_name": "Main Gate"}],
+        "device_ua_pro": {"id": CALLER_ID, "type": "UA-Intercom"},
+    }
+    if room:
+        meta["directory"] = {"id": room[0], "type": "directory", "display_name": room[1]}
+    if actor:
+        meta["actor"] = {"id": USER_BOB, "type": "user", "display_name": actor}
+    if capture:
+        meta["reader_capture"] = {
+            "id": capture,
+            "thumbnail_url": f"/protect/api/events/{capture}/thumbnail",
+        }
+    if viewer:
+        meta["viewer"] = {"id": VIEWER, "type": "UA-Int-Viewer", "display_name": "Front door"}
+    return {
+        "id": str(event_id),
+        "log_key": log_key,
+        "event_type": event_type,
+        "message": "",
+        "published": published_ms,
+        "metadata": meta,
+    }

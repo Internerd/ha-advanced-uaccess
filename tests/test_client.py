@@ -143,3 +143,27 @@ async def test_users_pagination(hass: HomeAssistant, mocker: AiohttpClientMocker
     users = await _client(hass, mocker).get_users()
     assert len(users) == 101
     assert users["u100"] == "Last One"
+
+
+async def test_search_system_log(hass: HomeAssistant, mocker: AiohttpClientMocker) -> None:
+    """since/until are sent as RFC 3339 strings, events are unwrapped."""
+    from datetime import UTC, datetime
+
+    _login(mocker)
+    mocker.post(
+        f"{API}/system_log/search",
+        json={"code": 1, "data": {"events": [{"id": "1"}], "buckets": []}},
+    )
+    events = await _client(hass, mocker).search_system_log(
+        "rings",
+        datetime(2026, 10, 17, 16, 0, tzinfo=UTC),
+        datetime(2026, 10, 17, 16, 5, tzinfo=UTC),
+    )
+    assert events == [{"id": "1"}]
+    _method, url, body, _headers = mocker.mock_calls[1]
+    assert dict(url.query) == {"page_size": "50", "page_num": "1"}
+    assert body == {
+        "topic": "rings",
+        "since": "2026-10-17T16:00:00Z",
+        "until": "2026-10-17T16:05:00Z",
+    }

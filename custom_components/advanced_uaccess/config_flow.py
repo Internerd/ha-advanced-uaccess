@@ -29,10 +29,12 @@ from .api import AccessApiError, AccessAuthError, AccessConnectionError
 from .const import (
     CONF_RESTORE_SCHEDULES,
     CONF_SCAN_INTERVAL,
+    CONF_TRACK_CALLS,
     CONF_USER_RECEIVERS,
     CONF_VERIFY_SSL,
     DEFAULT_RESTORE_SCHEDULES,
     DEFAULT_SCAN_INTERVAL,
+    DEFAULT_TRACK_CALLS,
     DEFAULT_VERIFY_SSL,
     DOMAIN,
     MAX_SCAN_INTERVAL,
@@ -192,6 +194,10 @@ class AccessOptionsFlow(OptionsFlow):
                 vol.Required(
                     CONF_RESTORE_SCHEDULES,
                     default=options.get(CONF_RESTORE_SCHEDULES, DEFAULT_RESTORE_SCHEDULES),
+                ): BooleanSelector(),
+                vol.Required(
+                    CONF_TRACK_CALLS,
+                    default=options.get(CONF_TRACK_CALLS, DEFAULT_TRACK_CALLS),
                 ): BooleanSelector(),
                 vol.Optional(CONF_USER_RECEIVERS, default=default_users): SelectSelector(
                     SelectSelectorConfig(
