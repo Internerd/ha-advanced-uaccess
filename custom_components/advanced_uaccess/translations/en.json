@@ -1,0 +1,302 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to UniFi OS console",
+        "description": "Use a local UniFi OS account without MFA that may manage UniFi Access. The connection stays in your local network.",
+        "data": {
+          "host": "Host",
+          "username": "Username",
+          "password": "Password",
+          "verify_ssl": "Verify SSL certificate"
+        },
+        "data_description": {
+          "host": "IP address or hostname of the console (UDM, UNVR, UCG, …).",
+          "username": "Local account (not a UI.com cloud account).",
+          "password": "Password of the local account.",
+          "verify_ssl": "Leave off for the self-signed certificate of the console."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate",
+        "description": "The console {host} rejected the stored credentials.",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigure console",
+        "data": {
+          "host": "Host",
+          "username": "Username",
+          "password": "Password",
+          "verify_ssl": "Verify SSL certificate"
+        },
+        "data_description": {
+          "host": "IP address or hostname of the console (UDM, UNVR, UCG, …).",
+          "verify_ssl": "Leave off for the self-signed certificate of the console."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to the console.",
+      "invalid_auth": "Invalid username or password (or the account requires MFA).",
+      "no_access": "Logged in, but the UniFi Access API is not reachable. Is Access installed and does the account have Access permissions?",
+      "no_intercom": "No intercom found in UniFi Access.",
+      "unknown": "Unexpected error, see the log."
+    },
+    "abort": {
+      "already_configured": "This console is already configured.",
+      "reauth_successful": "Re-authentication successful.",
+      "reconfigure_successful": "Reconfiguration successful.",
+      "wrong_console": "This is a different console. Add it as a new entry instead."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options",
+        "data": {
+          "scan_interval": "Polling interval",
+          "restore_schedules": "Restore schedules",
+          "user_receivers": "Users offered as receivers"
+        },
+        "data_description": {
+          "scan_interval": "How often the directory is read from the console.",
+          "restore_schedules": "Access deletes the private schedule of a receiver when it is removed. When enabled, the schedule is saved and restored when the receiver is added again.",
+          "user_receivers": "One switch per room is created for each selected user. Default: users that already receive calls."
+        }
+      }
+    }
+  },
+  "device": {
+    "direct_call": {
+      "name": "{intercom} doorbell call"
+    }
+  },
+  "entity": {
+    "switch": {
+      "viewer": {
+        "name": "Viewer"
+      },
+      "admin": {
+        "name": "User"
+      },
+      "chime": {
+        "name": "Chime"
+      },
+      "phone_number": {
+        "name": "Phone number"
+      },
+      "third_party_sip": {
+        "name": "Third-party SIP"
+      },
+      "third_party_viewer": {
+        "name": "Third-party viewer"
+      }
+    },
+    "sensor": {
+      "receivers": {
+        "name": "Receivers"
+      },
+      "rooms": {
+        "name": "Rooms"
+      }
+    }
+  },
+  "selector": {
+    "receiver_type": {
+      "options": {
+        "viewer": "Viewer",
+        "admin": "User",
+        "chime": "Chime",
+        "phone_number": "Phone number",
+        "third_party_sip": "Third-party SIP",
+        "third_party_viewer": "Third-party viewer"
+      }
+    }
+  },
+  "exceptions": {
+    "caller_required": {
+      "message": "Several intercoms exist, please specify caller_id."
+    },
+    "unknown_caller": {
+      "message": "Unknown intercom {caller_id}."
+    },
+    "invalid_entity": {
+      "message": "{entity_id} is not a receiver switch of this integration."
+    },
+    "missing_fields": {
+      "message": "Missing fields: {fields}. Pass entity_id or all ids."
+    },
+    "unknown_room": {
+      "message": "Unknown room {room_id}."
+    },
+    "invalid_time": {
+      "message": "Invalid time slot {value}. Use HH:MM-HH:MM."
+    }
+  },
+  "services": {
+    "add_receiver": {
+      "name": "Add receiver",
+      "description": "Adds a receiver to a room or to the doorbell direct call.",
+      "fields": {
+        "entity_id": {
+          "name": "Receiver switch",
+          "description": "Switch of this integration. Replaces caller, room, type and receiver id."
+        },
+        "caller_id": {
+          "name": "Intercom id",
+          "description": "Caller id of the intercom. Optional if there is only one intercom."
+        },
+        "room_id": {
+          "name": "Room id",
+          "description": "Room id, or \"direct\" for the doorbell direct call."
+        },
+        "receiver_type": {
+          "name": "Receiver type",
+          "description": "Type of the receiver."
+        },
+        "receiver_id": {
+          "name": "Receiver id",
+          "description": "Viewer id, chime MAC without colons, user unique_id or phone number unique_id."
+        }
+      }
+    },
+    "remove_receiver": {
+      "name": "Remove receiver",
+      "description": "Removes a receiver from a room or from the doorbell direct call.",
+      "fields": {
+        "entity_id": {
+          "name": "Receiver switch",
+          "description": "Switch of this integration. Replaces caller, room, type and receiver id."
+        },
+        "caller_id": {
+          "name": "Intercom id",
+          "description": "Caller id of the intercom. Optional if there is only one intercom."
+        },
+        "room_id": {
+          "name": "Room id",
+          "description": "Room id, or \"direct\" for the doorbell direct call."
+        },
+        "receiver_type": {
+          "name": "Receiver type",
+          "description": "Type of the receiver."
+        },
+        "receiver_id": {
+          "name": "Receiver id",
+          "description": "Viewer id, chime MAC without colons, user unique_id or phone number unique_id."
+        }
+      }
+    },
+    "clear_schedule": {
+      "name": "Clear schedule",
+      "description": "Sets the schedule of a receiver back to \"Always\".",
+      "fields": {
+        "entity_id": {
+          "name": "Receiver switch",
+          "description": "Switch of this integration. Replaces caller, room, type and receiver id."
+        },
+        "caller_id": {
+          "name": "Intercom id",
+          "description": "Caller id of the intercom. Optional if there is only one intercom."
+        },
+        "room_id": {
+          "name": "Room id",
+          "description": "Room id, or \"direct\" for the doorbell direct call."
+        },
+        "receiver_type": {
+          "name": "Receiver type",
+          "description": "Type of the receiver."
+        },
+        "receiver_id": {
+          "name": "Receiver id",
+          "description": "Viewer id, chime MAC without colons, user unique_id or phone number unique_id."
+        }
+      }
+    },
+    "set_schedule": {
+      "name": "Set schedule",
+      "description": "Sets a custom weekly schedule for an attached receiver.",
+      "fields": {
+        "entity_id": {
+          "name": "Receiver switch",
+          "description": "Switch of this integration. Replaces caller, room, type and receiver id."
+        },
+        "caller_id": {
+          "name": "Intercom id",
+          "description": "Caller id of the intercom. Optional if there is only one intercom."
+        },
+        "room_id": {
+          "name": "Room id",
+          "description": "Room id, or \"direct\" for the doorbell direct call."
+        },
+        "receiver_type": {
+          "name": "Receiver type",
+          "description": "Type of the receiver."
+        },
+        "receiver_id": {
+          "name": "Receiver id",
+          "description": "Viewer id, chime MAC without colons, user unique_id or phone number unique_id."
+        },
+        "schedule": {
+          "name": "Schedule",
+          "description": "Weekdays (sunday … saturday) with lists of time slots \"HH:MM-HH:MM\". Missing days have no slot."
+        }
+      }
+    },
+    "create_room": {
+      "name": "Create room",
+      "description": "Creates a new room in the intercom directory.",
+      "fields": {
+        "caller_id": {
+          "name": "Intercom id",
+          "description": "Caller id of the intercom. Optional if there is only one intercom."
+        },
+        "name": {
+          "name": "Name",
+          "description": "Name shown on the intercom."
+        },
+        "number": {
+          "name": "Room number",
+          "description": "Digits the visitor can enter."
+        },
+        "number_check": {
+          "name": "Number check",
+          "description": "Visitors can call the room by entering its number."
+        },
+        "viewers": {
+          "name": "Viewer",
+          "description": "Viewer ids."
+        },
+        "admins": {
+          "name": "User",
+          "description": "User unique_ids."
+        },
+        "chimes": {
+          "name": "Chime",
+          "description": "Chime MACs without colons."
+        },
+        "phone_numbers": {
+          "name": "Phone number",
+          "description": "Phone number unique_ids."
+        }
+      }
+    },
+    "delete_room": {
+      "name": "Delete room",
+      "description": "Deletes a room from the intercom directory.",
+      "fields": {
+        "caller_id": {
+          "name": "Intercom id",
+          "description": "Caller id of the intercom. Optional if there is only one intercom."
+        },
+        "room_id": {
+          "name": "Room id",
+          "description": "Id of the room to delete."
+        }
+      }
+    }
+  }
+}

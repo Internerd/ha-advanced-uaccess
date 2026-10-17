@@ -1,0 +1,302 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Mit UniFi-OS-Konsole verbinden",
+        "description": "Verwende einen lokalen UniFi-OS-Account ohne MFA, der UniFi Access verwalten darf. Die Verbindung bleibt in deinem lokalen Netz.",
+        "data": {
+          "host": "Host",
+          "username": "Benutzername",
+          "password": "Passwort",
+          "verify_ssl": "SSL-Zertifikat prüfen"
+        },
+        "data_description": {
+          "host": "IP-Adresse oder Hostname der Konsole (UDM, UNVR, UCG, …).",
+          "username": "Lokaler Account (kein UI.com-Cloud-Account).",
+          "password": "Passwort des lokalen Accounts.",
+          "verify_ssl": "Für das selbstsignierte Zertifikat der Konsole ausgeschaltet lassen."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Erneut anmelden",
+        "description": "Die Konsole {host} hat die gespeicherten Zugangsdaten abgelehnt.",
+        "data": {
+          "username": "Benutzername",
+          "password": "Passwort"
+        }
+      },
+      "reconfigure": {
+        "title": "Konsole neu konfigurieren",
+        "data": {
+          "host": "Host",
+          "username": "Benutzername",
+          "password": "Passwort",
+          "verify_ssl": "SSL-Zertifikat prüfen"
+        },
+        "data_description": {
+          "host": "IP-Adresse oder Hostname der Konsole (UDM, UNVR, UCG, …).",
+          "verify_ssl": "Für das selbstsignierte Zertifikat der Konsole ausgeschaltet lassen."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Keine Verbindung zur Konsole.",
+      "invalid_auth": "Benutzername oder Passwort falsch (oder der Account verlangt MFA).",
+      "no_access": "Anmeldung ok, aber die UniFi-Access-API ist nicht erreichbar. Ist Access installiert und hat der Account Access-Rechte?",
+      "no_intercom": "In UniFi Access wurde keine Gegensprechanlage gefunden.",
+      "unknown": "Unerwarteter Fehler, siehe Log."
+    },
+    "abort": {
+      "already_configured": "Diese Konsole ist bereits eingerichtet.",
+      "reauth_successful": "Erneute Anmeldung erfolgreich.",
+      "reconfigure_successful": "Neukonfiguration erfolgreich.",
+      "wrong_console": "Das ist eine andere Konsole. Bitte als neuen Eintrag hinzufügen."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Optionen",
+        "data": {
+          "scan_interval": "Abfrageintervall",
+          "restore_schedules": "Zeitpläne wiederherstellen",
+          "user_receivers": "Benutzer als Empfänger anbieten"
+        },
+        "data_description": {
+          "scan_interval": "Wie oft das Verzeichnis von der Konsole gelesen wird.",
+          "restore_schedules": "Access löscht den privaten Zeitplan eines Empfängers beim Entfernen. Wenn aktiv, wird der Zeitplan gesichert und beim erneuten Hinzufügen wiederhergestellt.",
+          "user_receivers": "Für jeden gewählten Benutzer wird pro Raum ein Schalter angelegt. Standard: Benutzer, die bereits Anrufe erhalten."
+        }
+      }
+    }
+  },
+  "device": {
+    "direct_call": {
+      "name": "{intercom} Türklingelruf"
+    }
+  },
+  "entity": {
+    "switch": {
+      "viewer": {
+        "name": "Viewer"
+      },
+      "admin": {
+        "name": "Benutzer"
+      },
+      "chime": {
+        "name": "Chime"
+      },
+      "phone_number": {
+        "name": "Telefonnummer"
+      },
+      "third_party_sip": {
+        "name": "Fremd-SIP"
+      },
+      "third_party_viewer": {
+        "name": "Fremd-Viewer"
+      }
+    },
+    "sensor": {
+      "receivers": {
+        "name": "Empfänger"
+      },
+      "rooms": {
+        "name": "Räume"
+      }
+    }
+  },
+  "selector": {
+    "receiver_type": {
+      "options": {
+        "viewer": "Viewer",
+        "admin": "Benutzer",
+        "chime": "Chime",
+        "phone_number": "Telefonnummer",
+        "third_party_sip": "Fremd-SIP",
+        "third_party_viewer": "Fremd-Viewer"
+      }
+    }
+  },
+  "exceptions": {
+    "caller_required": {
+      "message": "Es gibt mehrere Gegensprechanlagen, bitte caller_id angeben."
+    },
+    "unknown_caller": {
+      "message": "Unbekannte Gegensprechanlage {caller_id}."
+    },
+    "invalid_entity": {
+      "message": "{entity_id} ist kein Empfänger-Schalter dieser Integration."
+    },
+    "missing_fields": {
+      "message": "Fehlende Felder: {fields}. entity_id oder alle IDs angeben."
+    },
+    "unknown_room": {
+      "message": "Unbekannter Raum {room_id}."
+    },
+    "invalid_time": {
+      "message": "Ungültiges Zeitfenster {value}. Format HH:MM-HH:MM."
+    }
+  },
+  "services": {
+    "add_receiver": {
+      "name": "Empfänger hinzufügen",
+      "description": "Fügt einem Raum oder dem Türklingel-Direktruf einen Empfänger hinzu.",
+      "fields": {
+        "entity_id": {
+          "name": "Empfänger-Schalter",
+          "description": "Schalter dieser Integration. Ersetzt Intercom-, Raum-, Typ- und Empfänger-ID."
+        },
+        "caller_id": {
+          "name": "Intercom-ID",
+          "description": "Caller-ID der Gegensprechanlage. Optional, wenn es nur eine gibt."
+        },
+        "room_id": {
+          "name": "Raum-ID",
+          "description": "Raum-ID oder \"direct\" für den Türklingel-Direktruf."
+        },
+        "receiver_type": {
+          "name": "Empfängertyp",
+          "description": "Typ des Empfängers."
+        },
+        "receiver_id": {
+          "name": "Empfänger-ID",
+          "description": "Viewer-ID, Chime-MAC ohne Doppelpunkte, unique_id des Benutzers oder der Telefonnummer."
+        }
+      }
+    },
+    "remove_receiver": {
+      "name": "Empfänger entfernen",
+      "description": "Entfernt einen Empfänger aus einem Raum oder dem Türklingel-Direktruf.",
+      "fields": {
+        "entity_id": {
+          "name": "Empfänger-Schalter",
+          "description": "Schalter dieser Integration. Ersetzt Intercom-, Raum-, Typ- und Empfänger-ID."
+        },
+        "caller_id": {
+          "name": "Intercom-ID",
+          "description": "Caller-ID der Gegensprechanlage. Optional, wenn es nur eine gibt."
+        },
+        "room_id": {
+          "name": "Raum-ID",
+          "description": "Raum-ID oder \"direct\" für den Türklingel-Direktruf."
+        },
+        "receiver_type": {
+          "name": "Empfängertyp",
+          "description": "Typ des Empfängers."
+        },
+        "receiver_id": {
+          "name": "Empfänger-ID",
+          "description": "Viewer-ID, Chime-MAC ohne Doppelpunkte, unique_id des Benutzers oder der Telefonnummer."
+        }
+      }
+    },
+    "clear_schedule": {
+      "name": "Zeitplan zurücksetzen",
+      "description": "Setzt den Zeitplan eines Empfängers auf \"Immer\" zurück.",
+      "fields": {
+        "entity_id": {
+          "name": "Empfänger-Schalter",
+          "description": "Schalter dieser Integration. Ersetzt Intercom-, Raum-, Typ- und Empfänger-ID."
+        },
+        "caller_id": {
+          "name": "Intercom-ID",
+          "description": "Caller-ID der Gegensprechanlage. Optional, wenn es nur eine gibt."
+        },
+        "room_id": {
+          "name": "Raum-ID",
+          "description": "Raum-ID oder \"direct\" für den Türklingel-Direktruf."
+        },
+        "receiver_type": {
+          "name": "Empfängertyp",
+          "description": "Typ des Empfängers."
+        },
+        "receiver_id": {
+          "name": "Empfänger-ID",
+          "description": "Viewer-ID, Chime-MAC ohne Doppelpunkte, unique_id des Benutzers oder der Telefonnummer."
+        }
+      }
+    },
+    "set_schedule": {
+      "name": "Zeitplan setzen",
+      "description": "Setzt einen benutzerdefinierten Wochenplan für einen zugeordneten Empfänger.",
+      "fields": {
+        "entity_id": {
+          "name": "Empfänger-Schalter",
+          "description": "Schalter dieser Integration. Ersetzt Intercom-, Raum-, Typ- und Empfänger-ID."
+        },
+        "caller_id": {
+          "name": "Intercom-ID",
+          "description": "Caller-ID der Gegensprechanlage. Optional, wenn es nur eine gibt."
+        },
+        "room_id": {
+          "name": "Raum-ID",
+          "description": "Raum-ID oder \"direct\" für den Türklingel-Direktruf."
+        },
+        "receiver_type": {
+          "name": "Empfängertyp",
+          "description": "Typ des Empfängers."
+        },
+        "receiver_id": {
+          "name": "Empfänger-ID",
+          "description": "Viewer-ID, Chime-MAC ohne Doppelpunkte, unique_id des Benutzers oder der Telefonnummer."
+        },
+        "schedule": {
+          "name": "Zeitplan",
+          "description": "Wochentage (sunday … saturday) mit Listen von Zeitfenstern \"HH:MM-HH:MM\". Fehlende Tage haben kein Zeitfenster."
+        }
+      }
+    },
+    "create_room": {
+      "name": "Raum anlegen",
+      "description": "Legt einen neuen Raum im Intercom-Verzeichnis an.",
+      "fields": {
+        "caller_id": {
+          "name": "Intercom-ID",
+          "description": "Caller-ID der Gegensprechanlage. Optional, wenn es nur eine gibt."
+        },
+        "name": {
+          "name": "Name",
+          "description": "Name, der am Intercom angezeigt wird."
+        },
+        "number": {
+          "name": "Raumnummer",
+          "description": "Ziffern, die der Besucher eingeben kann."
+        },
+        "number_check": {
+          "name": "Nummernwahl",
+          "description": "Besucher können den Raum über seine Nummer anrufen."
+        },
+        "viewers": {
+          "name": "Viewer",
+          "description": "Viewer-IDs."
+        },
+        "admins": {
+          "name": "Benutzer",
+          "description": "unique_ids der Benutzer."
+        },
+        "chimes": {
+          "name": "Chime",
+          "description": "Chime-MACs ohne Doppelpunkte."
+        },
+        "phone_numbers": {
+          "name": "Telefonnummer",
+          "description": "unique_ids der Telefonnummern."
+        }
+      }
+    },
+    "delete_room": {
+      "name": "Raum löschen",
+      "description": "Löscht einen Raum aus dem Intercom-Verzeichnis.",
+      "fields": {
+        "caller_id": {
+          "name": "Intercom-ID",
+          "description": "Caller-ID der Gegensprechanlage. Optional, wenn es nur eine gibt."
+        },
+        "room_id": {
+          "name": "Raum-ID",
+          "description": "ID des zu löschenden Raums."
+        }
+      }
+    }
+  }
+}

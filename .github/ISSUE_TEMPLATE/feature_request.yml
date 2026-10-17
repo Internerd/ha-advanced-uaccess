@@ -1,0 +1,15 @@
+name: Feature request
+description: Suggest an idea
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like to do?
+    validations:
+      required: true
+  - type: textarea
+    id: api
+    attributes:
+      label: API capture (optional)
+      description: The request the Access web UI sends for this action (browser dev tools → Network), personal data removed.

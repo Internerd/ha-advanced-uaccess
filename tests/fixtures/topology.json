@@ -1,0 +1,29 @@
+{
+  "edges": [
+    {"uplink_id": "c0f84226c42f1a088dafa11a0f0a11ff", "downlink_id": "907e1f01c13e7e6a79a9e88b207b315c"},
+    {"uplink_id": "907e1f01c13e7e6a79a9e88b207b315c", "downlink_id": "1812f9ea7c98817d2bf629f70ae5eb5b"},
+    {"uplink_id": "907e1f01c13e7e6a79a9e88b207b315c", "downlink_id": "baa54e3f6a8447467becb445406edbe3"},
+    {"uplink_id": "c0f84226c42f1a088dafa11a0f0a11ff", "downlink_id": "e723876e4ccf9db6495b3b664e4cea54"},
+    {"uplink_id": "e723876e4ccf9db6495b3b664e4cea54", "downlink_id": "ce1a295419e040571be89a55a6ace38b"},
+    {"uplink_id": "e723876e4ccf9db6495b3b664e4cea54", "downlink_id": "ab2317beea4434a1f42092f45c8ab01f"},
+    {"uplink_id": "c0f84226c42f1a088dafa11a0f0a11ff", "downlink_id": "bcdb677501f3e946a3493ac9e1a9b8be"}
+  ],
+  "vertices": [
+    {"node_id": "c0f84226c42f1a088dafa11a0f0a11ff", "type": "caller",
+     "extra": {"device_id": "28704e31e640", "disable_directory": false, "name": "UA Intercom e640", "type": "UA-Intercom"}},
+    {"node_id": "907e1f01c13e7e6a79a9e88b207b315c", "type": "directory",
+     "extra": {"name": "1 Alice", "number_check": true, "room": "255", "room_id": "566126a3-2809-4993-9625-b1bfb6ebd6e0"}},
+    {"node_id": "1812f9ea7c98817d2bf629f70ae5eb5b", "type": "chime",
+     "extra": {"device_id": "E43883358449", "display_name": "", "schedule_id": "", "schedule_is_private": false, "schedule_name": "", "avatar": ""}},
+    {"node_id": "baa54e3f6a8447467becb445406edbe3", "type": "viewer", "name": "UA Intercom Viewer bf7d",
+     "extra": {"device_id": "0cea1417bf7d", "display_name": "UA Intercom Viewer bf7d", "schedule_id": "", "schedule_is_private": false, "schedule_name": "", "avatar": ""}},
+    {"node_id": "e723876e4ccf9db6495b3b664e4cea54", "type": "directory",
+     "extra": {"name": "2 Bob", "number_check": true, "room": "26", "room_id": "ec4877a7-10d7-4c38-8831-d823a829b870"}},
+    {"node_id": "ce1a295419e040571be89a55a6ace38b", "type": "admin",
+     "extra": {"id": "cd4991c9-c4ad-42ab-827a-8fb9f4fd96f2", "uid_sso_id": "", "name": "Bob Example", "avatar": "", "email": "***@example.com", "schedule_id": "", "schedule_is_private": false, "schedule_name": ""}},
+    {"node_id": "ab2317beea4434a1f42092f45c8ab01f", "type": "chime",
+     "extra": {"device_id": "E438830ED667", "display_name": "", "schedule_id": "", "schedule_is_private": false, "schedule_name": "", "avatar": ""}},
+    {"node_id": "bcdb677501f3e946a3493ac9e1a9b8be", "type": "viewer", "name": "UA Intercom Viewer bf7d",
+     "extra": {"device_id": "0cea1417bf7d", "display_name": "UA Intercom Viewer bf7d", "schedule_id": "296f707e-f338-4cfb-9eb8-2c35763a7865", "schedule_is_private": true, "schedule_name": "Custom", "avatar": ""}}
+  ]
+}

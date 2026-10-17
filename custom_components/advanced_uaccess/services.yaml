@@ -1,0 +1,176 @@
+add_receiver:
+  fields:
+    entity_id:
+      selector:
+        entity:
+          integration: advanced_uaccess
+          domain: switch
+    caller_id:
+      example: "28704e31e640"
+      selector:
+        text:
+    room_id:
+      example: "566126a3-2809-4993-9625-b1bfb6ebd6e0"
+      selector:
+        text:
+    receiver_type:
+      selector:
+        select:
+          translation_key: receiver_type
+          options:
+            - viewer
+            - admin
+            - chime
+            - phone_number
+            - third_party_sip
+            - third_party_viewer
+    receiver_id:
+      example: "E43883358449"
+      selector:
+        text:
+
+remove_receiver:
+  fields:
+    entity_id:
+      selector:
+        entity:
+          integration: advanced_uaccess
+          domain: switch
+    caller_id:
+      example: "28704e31e640"
+      selector:
+        text:
+    room_id:
+      example: "566126a3-2809-4993-9625-b1bfb6ebd6e0"
+      selector:
+        text:
+    receiver_type:
+      selector:
+        select:
+          translation_key: receiver_type
+          options:
+            - viewer
+            - admin
+            - chime
+            - phone_number
+            - third_party_sip
+            - third_party_viewer
+    receiver_id:
+      example: "E43883358449"
+      selector:
+        text:
+
+clear_schedule:
+  fields:
+    entity_id:
+      selector:
+        entity:
+          integration: advanced_uaccess
+          domain: switch
+    caller_id:
+      example: "28704e31e640"
+      selector:
+        text:
+    room_id:
+      example: "566126a3-2809-4993-9625-b1bfb6ebd6e0"
+      selector:
+        text:
+    receiver_type:
+      selector:
+        select:
+          translation_key: receiver_type
+          options:
+            - viewer
+            - admin
+            - chime
+            - phone_number
+            - third_party_sip
+            - third_party_viewer
+    receiver_id:
+      example: "E43883358449"
+      selector:
+        text:
+
+set_schedule:
+  fields:
+    entity_id:
+      selector:
+        entity:
+          integration: advanced_uaccess
+          domain: switch
+    caller_id:
+      example: "28704e31e640"
+      selector:
+        text:
+    room_id:
+      example: "566126a3-2809-4993-9625-b1bfb6ebd6e0"
+      selector:
+        text:
+    receiver_type:
+      selector:
+        select:
+          translation_key: receiver_type
+          options:
+            - viewer
+            - admin
+            - chime
+            - phone_number
+            - third_party_sip
+            - third_party_viewer
+    receiver_id:
+      example: "E43883358449"
+      selector:
+        text:
+    schedule:
+      required: true
+      example: '{"monday": ["09:00-17:00"], "tuesday": ["09:00-12:00", "13:00-17:00"]}'
+      selector:
+        object:
+
+create_room:
+  fields:
+    caller_id:
+      example: "28704e31e640"
+      selector:
+        text:
+    name:
+      required: true
+      example: "3 Guest"
+      selector:
+        text:
+    number:
+      required: true
+      example: "999"
+      selector:
+        text:
+    number_check:
+      default: true
+      selector:
+        boolean:
+    viewers:
+      selector:
+        text:
+          multiple: true
+    admins:
+      selector:
+        text:
+          multiple: true
+    chimes:
+      selector:
+        text:
+          multiple: true
+    phone_numbers:
+      selector:
+        text:
+          multiple: true
+
+delete_room:
+  fields:
+    caller_id:
+      example: "28704e31e640"
+      selector:
+        text:
+    room_id:
+      required: true
+      selector:
+        text:

@@ -1,0 +1,24 @@
+{
+  "entity": {
+    "switch": {
+      "viewer": { "default": "mdi:tablet-dashboard" },
+      "admin": { "default": "mdi:account" },
+      "chime": { "default": "mdi:bell-ring" },
+      "phone_number": { "default": "mdi:phone" },
+      "third_party_sip": { "default": "mdi:phone-voip" },
+      "third_party_viewer": { "default": "mdi:monitor" }
+    },
+    "sensor": {
+      "receivers": { "default": "mdi:bell-badge" },
+      "rooms": { "default": "mdi:door" }
+    }
+  },
+  "services": {
+    "add_receiver": { "service": "mdi:account-plus" },
+    "remove_receiver": { "service": "mdi:account-minus" },
+    "create_room": { "service": "mdi:door-open" },
+    "delete_room": { "service": "mdi:door-closed-cancel" },
+    "set_schedule": { "service": "mdi:calendar-clock" },
+    "clear_schedule": { "service": "mdi:calendar-remove" }
+  }
+}
