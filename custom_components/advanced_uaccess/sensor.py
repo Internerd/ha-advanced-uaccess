@@ -164,9 +164,14 @@ class LastCallSensor(CoordinatorEntity[AccessCoordinator], SensorEntity):
     def _target_label(self, call: Call) -> str:
         if call.target_id != DIRECT_CALL:
             return call.target_name or call.target_id
-        device = dr.async_get(self.hass).async_get_device(
-            identifiers={(DOMAIN, f"{self.caller_id}_{DIRECT_CALL}")}
-        )
+        identifier = (DOMAIN, f"{self.caller_id}_{DIRECT_CALL}")
+        registry = dr.async_get(self.hass)
+        # async_get_device is deprecated since HA 2026.x (removed in 2027.8);
+        # older versions only have async_get_device.
+        if by_identifier := getattr(registry, "async_get_device_by_identifier", None):
+            device = by_identifier(identifier, self.coordinator.config_entry.entry_id)
+        else:
+            device = registry.async_get_device(identifiers={identifier})
         return (device.name if device else None) or DIRECT_CALL
 
     @property

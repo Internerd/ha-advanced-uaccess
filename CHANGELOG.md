@@ -3,6 +3,12 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.2.1] - 2026-10-17
+
+### Fixed
+
+- The "Last call" sensor looks up the doorbell-call device with `async_get_device_by_identifier` on Home Assistant versions that have it. `async_get_device` is deprecated and will be removed in Home Assistant 2027.8.
+
 ## [0.2.0] - 2026-10-17
 
 ### Added
@@ -43,6 +49,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Diagnostics with redaction.
 - English and German translations.
 
+[0.2.1]: https://github.com/internerd/ha-advanced-uaccess/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/internerd/ha-advanced-uaccess/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/internerd/ha-advanced-uaccess/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/internerd/ha-advanced-uaccess/compare/v0.1.0...v0.1.1
